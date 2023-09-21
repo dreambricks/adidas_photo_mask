@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, redirect, url_for, send_from_
 import os
 from PIL import Image
 import binascii
-import argparse
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -43,6 +43,8 @@ def image_gallery():
     # Filtrar os arquivos na pasta "images" por extensão permitida
     image_files = [f for f in os.listdir(image_folder) if f.split('.')[-1].lower() in allowed_extensions]
 
+    image_files.sort(key=lambda x: os.path.getmtime(os.path.join(image_folder, x)), reverse=True)
+
     return render_template('gallery.html', image_files=image_files)
 
 
@@ -60,7 +62,14 @@ def apply_mask(filename):
 
     # Converter a imagem resultante para o modo RGB antes de salvar em JPEG
     result_image = result_image.convert('RGB')
-    result_image.save('static/images/masked_' + os.path.basename(filename), 'JPEG')
+
+    # Obter a data e hora atual no formato yyyyMMdd_HHmmss
+    current_datetime = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    # Concatenar o prefixo "adidas_" com a data e hora
+    result_filename = f'static/images/adidas_{current_datetime}.jpg'
+
+    result_image.save(result_filename, 'JPEG')
 
 if __name__ == '__main__':
     app.run(debug=True)
